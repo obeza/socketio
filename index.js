@@ -9,7 +9,7 @@ let http = require('http').Server(app);
 let io = require('socket.io')(http);
  
 io.on('connection', (socket) => {
-  
+  console.log('Un client est connecté !');
   socket.on('disconnect', function(){
     io.emit('users-changed', {user: socket.nickname, event: 'left'});   
   });
@@ -28,15 +28,14 @@ io.on('connection', (socket) => {
     console.log('message ', message);
   });
 
-/*   setInterval(function(){
-    socket.emit('stream', {'title': "A new title via Socket.IO!"});
-}, 1000); */
+  //socket.emit('stream', {'title': "A new title via Socket.IO!"});
 
-app.post('/msg', function (req, res) {
-  socket.emit('stream', {'title': req.body.msg});
-  res.send('Hello World! msg :');
-  console.log('msg req :', req.body.msg);
-});
+  app.post('/msg', function (req, res) {
+    // envoie a tout le monde
+    socket.broadcast.emit('stream', {'title': req.body.msg});
+    res.send('Hello World! msg :');
+    console.log('msg req :', req.body.msg);
+  });
 
 });
  
