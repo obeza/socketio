@@ -1,9 +1,12 @@
 let express = require('express')
 , bodyParser = require('body-parser');
+//var expressLayouts = require('express-ejs-layouts');
 
 let app = express();
 
-app.use(bodyParser.json());
+app.set('view engine', 'ejs');
+app.set('views', __dirname + '/views');
+app.use(bodyParser.json())
 
 let http = require('http').Server(app);
 let io = require('socket.io')(http);
@@ -31,10 +34,17 @@ io.on('connection', (socket) => {
   //socket.emit('stream', {'title': "A new title via Socket.IO!"});
 
   app.post('/msg', function (req, res) {
+    console.log('msg req :', req.body);
     // envoie a tout le monde
-    socket.broadcast.emit('stream', {'title': req.body.msg});
+    //socket.broadcast.emit('stream', {'title': req.body.msg});
+    io.emit('stream', {
+      'title': req.body.title,
+      'msg': req.body.msg
+    });
+    
+
     res.send('Hello World! msg :');
-    console.log('msg req :', req.body.msg);
+    
   });
 
 });
@@ -43,6 +53,18 @@ var port = process.env.PORT || 3001;
  
 http.listen(port, function(){
    console.log('listening in http://localhost:' + port);
+});
+
+app.get('/index', function (req, res) {
+  var locals = {
+    title: 'Page Title',
+    description: 'Page Description'
+  };
+  res.render('index', locals);
+});
+
+app.get('/notif', function (req, res) {
+  res.render('notif');
 });
 
 var server = app.listen(3000, function () {

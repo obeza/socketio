@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+  <head>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.7.2/socket.io.js"></script>
+  <script src="https://unpkg.com/vue/dist/vue.js"></script>
+  </head>
+
+  <body>
+    <h1><%= title %></h1>
+    <p><%= description %></p>
+
+
+  <div id="app">
+    <h1>{{title}}</h1>
+    <button @click="pingServer()">Ping Server</button>
+    <button @click="hello()">Dire hello</button>
+    <button @click="notifyMe('Salut toi !')">Dire hello</button>
+  </div>
+  <script>
+
+
+
+var app = new Vue({
+      el: "#app",
+      data: {
+        title: "I'm an even uglier signup page. Fix me!"
+      },
+      methods: {
+        pingServer() {
+          // Send the "pingServer" event to the server.
+          _socket.emit('pingServer', 'PING!');
+        },
+        hello(){
+          alert('hello');
+        },
+        notifyMe(msg) {
+  // Voyons si le navigateur supporte les notifications
+  if (!("Notification" in window)) {
+    alert("Ce navigateur ne supporte pas les notifications desktop");
+  }
+
+  // Voyons si l'utilisateur est OK pour recevoir des notifications
+  else if (Notification.permission === "granted") {
+    // Si c'est ok, créons une notification
+    var notification = new Notification(msg);
+  }
+
+  // Sinon, nous avons besoin de la permission de l'utilisateur
+  // Note : Chrome n'implémente pas la propriété statique permission
+  // Donc, nous devons vérifier s'il n'y a pas 'denied' à la place de 'default'
+  else if (Notification.permission !== 'denied') {
+    Notification.requestPermission(function (permission) {
+
+      // Quelque soit la réponse de l'utilisateur, nous nous assurons de stocker cette information
+      if(!('permission' in Notification)) {
+        Notification.permission = permission;
+      }
+
+      // Si l'utilisateur est OK, on crée une notification
+      if (permission === "granted") {
+        var notification = new Notification("Salut toi !");
+      }
+    });
+  }
+
+  // Comme ça, si l'utlisateur a refusé toute notification, et que vous respectez ce choix,
+  // il n'y a pas besoin de l'ennuyer à nouveau.
+}
+        
+      }
+    })
+
+    var _socket = io.connect('http://localhost:3001');
+    _socket.on('stream', function(data){
+      app.title = data.title;
+      app.notifyMe(data.msg);
+    }); 
+  </script>
+  
+</body> 
+</html>
